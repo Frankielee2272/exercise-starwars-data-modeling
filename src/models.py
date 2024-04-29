@@ -1,82 +1,42 @@
+from __future__ import annotations
+
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, declarative_base
+from typing import List
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Table
+from sqlalchemy.orm import relationship, declarative_base, Mapped
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
-from sqlalchemy import Column, Integer, String, Float, Table, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-from typing import List
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import Mapped
-from typing import List
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
-
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
-
-    def to_dict(self):
-        return {}
-
-## Draw from SQLAlchemy base
-render_er(Base, 'diagram.png')
 
 user_planet_favorite = Table(
-    "user_planet_favorite", 
+    "UserPlanetFavorite",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("user.id")),
+    Column("user_id", ForeignKey("User.id"), primary_key=True),
+    Column("planet_id", ForeignKey("Planet.id"), primary_key=True),
 )
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = "User"
+
     id = Column(Integer, primary_key=True)
-    username = Column(String(250), nullable=False)
-Base = declarative_base()
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    favorites: Mapped[List[Planet]] = relationship("Planet", secondary=user_planet_favorite)
 
 class Planet(Base):
-    __tablename__ = 'planet'
+    __tablename__ = "Planet"
 
     id = Column(Integer, primary_key=True)
-    population = Column(Integer, nullable=False)
+    population = Column(Integer,nullable=False)
     climate = Column(String, nullable=False)
-    surface_water = Column(Float, nullable=False)
+    surface_water_percentage = Column(String, nullable=False)
+    radius = Column(Float, nullable=False)
     gravity = Column(Float, nullable=False)
+    favorites: Mapped[List[User]] = relationship("User", secondary=user_planet_favorite)
 
-    user_planet_favorite = Table(
-        "user_planet_favorite", 
-        Base.metadata,
-        Column("user_id", Integer, ForeignKey("user.id")),
-        Column("planet_id", Integer, ForeignKey("planet.id"))
-    )
-class User(Base):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(250), nullable=False)
-    password = Column(String(250), nullable=False)
-    email = Column(String(250), nullable=False)
 
-    climate = Column(String, nullable=False)
-    surface_water = Column(Float, nullable=False)
-    gravity = Column(Float, nullable=False)
-    favorites: Mapped[List["User"]] = relationship("User", secondary=user_planet_favorite)
-    surface_water = Column(Float, nullable=False)
-    gravity = Column(Float, nullable=False)
-    favorites: Mapped[List [User]] = relationship("User", secondary=user_planet_favorite)
-    
+## Draw from SQLAlchemy base
+render_er(Base, 'diagram.png')
