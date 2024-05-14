@@ -25,8 +25,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    favorites: Mapped[List[Planet]] = relationship("Planet", secondary=user_planet_favorite)
-    starships = relationship("Starship", back_populates="owner")  # Relationship to the Starship table
+    favorites = relationship("Favorite", back_populates="user")
+    starships = relationship("Starship", back_populates="owner")
+
 # Planet Model
 class Planet(Base):
     __tablename__ = "Planet"
@@ -34,14 +35,13 @@ class Planet(Base):
     id = Column(Integer, primary_key=True)
     population = Column(Integer, nullable=False)
     climate = Column(String, nullable=False)
-    surface_water_percentage = Column(String, nullable=False)
+    surface_water_percentage = Column(Float, nullable=False)
     radius = Column(Float, nullable=False)
     gravity = Column(Float, nullable=False)
-    favorites: Mapped[List[User]] = relationship("User", secondary=user_planet_favorite)
+    characters = relationship("Character", back_populates="homeworld")
 
 # Starship Model
 class Starship(Base):
- class Starship(Base):
     __tablename__ = "Starship"
 
     id = Column(Integer, primary_key=True)
@@ -50,9 +50,33 @@ class Starship(Base):
     manufacturer = Column(String, nullable=False)
     cost_in_credits = Column(Float, nullable=False)
     capacity = Column(Integer, nullable=False)
-    owner_id = Column(Integer, ForeignKey('User.id'))  # Foreign key to the User table
+    owner_id = Column(Integer, ForeignKey('User.id'))
     owner = relationship("User", back_populates="starships")
-# Person Model
+
+# Character Model
+class Character(Base):
+    __tablename__ = "Character"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    species = Column(String)
+    gender = Column(String)
+    homeworld_id = Column(Integer, ForeignKey('Planet.id'))
+    homeworld = relationship("Planet", back_populates="characters")
+
+# Favorite Model
+class Favorite(Base):
+    __tablename__ = "Favorite"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('User.id'))
+    character_id = Column(Integer, ForeignKey('Character.id'))
+    planet_id = Column(Integer, ForeignKey('Planet.id'))
+    user = relationship("User", back_populates="favorites")
+    character = relationship("Character")
+    planet = relationship("Planet")
+
+# Person Model (Updated with correct foreign key)
 class Person(Base):
     __tablename__ = "Person"
 
@@ -60,7 +84,7 @@ class Person(Base):
     name = Column(String, nullable=False)
     age = Column(Integer)
     gender = Column(String)
-    home_planet_id = Column(Integer, ForeignKey('Person.id'))
+    home_planet_id = Column(Integer, ForeignKey('Planet.id'))
     home_planet = relationship("Planet")
 
 # Create engine and generate schema diagram
