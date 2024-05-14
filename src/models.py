@@ -26,7 +26,7 @@ class User(Base):
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
     favorites: Mapped[List[Planet]] = relationship("Planet", secondary=user_planet_favorite)
-
+    starships = relationship("Starship", back_populates="owner")  # Relationship to the Starship table
 # Planet Model
 class Planet(Base):
     __tablename__ = "Planet"
@@ -41,6 +41,7 @@ class Planet(Base):
 
 # Starship Model
 class Starship(Base):
+ class Starship(Base):
     __tablename__ = "Starship"
 
     id = Column(Integer, primary_key=True)
@@ -49,7 +50,8 @@ class Starship(Base):
     manufacturer = Column(String, nullable=False)
     cost_in_credits = Column(Float, nullable=False)
     capacity = Column(Integer, nullable=False)
-
+    owner_id = Column(Integer, ForeignKey('User.id'))  # Foreign key to the User table
+    owner = relationship("User", back_populates="starships")
 # Person Model
 class Person(Base):
     __tablename__ = "Person"
@@ -58,7 +60,7 @@ class Person(Base):
     name = Column(String, nullable=False)
     age = Column(Integer)
     gender = Column(String)
-    home_planet_id = Column(Integer, ForeignKey('Planet.id'))
+    home_planet_id = Column(Integer, ForeignKey('Person.id'))
     home_planet = relationship("Planet")
 
 # Create engine and generate schema diagram
